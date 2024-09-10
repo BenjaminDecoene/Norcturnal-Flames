@@ -1,80 +1,69 @@
 package com.example.nocternalflames.Activities
 
+import android.content.ContentValues.TAG
 import android.media.Image
 import android.os.Bundle
 import android.os.PersistableBundle
+import android.util.Log
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.nocternalflames.R
+import com.google.firebase.Firebase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.database
 
 class MainActivity : AppCompatActivity(){
-    private var candle1State = false
-    private var candle2State = false
-    private var candle3State = false
-    private var candle4State = false
-    private var candle5State = false
+    // Local candleState
+    private var candlesState = arrayOf(false,false,false,false,false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity_layout)
 
-        val candle1 = findViewById<ImageView>(R.id.candle1)
-        candle1.setOnClickListener{
-            if(candle1State){
-                lightCandle(candle1, false)
-                candle1State = false
-            }
-            else{
-                lightCandle(candle1, true)
-                candle1State = true
-            }
+        // Firebase realtime database
+        val database = Firebase.database("https://nocturnal-lights-61563-default-rtdb.europe-west1.firebasedatabase.app")
+
+        // Init database refs
+        val candlesdb = listOf(
+            database.getReference("candle1_state"),
+            database.getReference("candle2_state"),
+            database.getReference("candle3_state"),
+            database.getReference("candle4_state"),
+            database.getReference("candle5_state")
+            )
+
+        // Init candle image views
+        val candles = listOf(
+            findViewById<ImageView>(R.id.candle1),
+            findViewById<ImageView>(R.id.candle2),
+            findViewById<ImageView>(R.id.candle3),
+            findViewById<ImageView>(R.id.candle4),
+            findViewById<ImageView>(R.id.candle5)
+                )
+
+        // Listen to candle values in the db
+        candlesdb.forEachIndexed { index, candledb ->
+            candledb.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    // This method is called once with the initial value and again
+                    // whenever data at this location is updated.
+                    candlesState[index] = dataSnapshot.value as Boolean
+                    lightCandle(candles[index], candlesState[index])
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Failed to read value
+                    Log.w(TAG, "Failed to read value.", error.toException())
+                }
+            })
         }
 
-        val candle2 = findViewById<ImageView>(R.id.candle2)
-        candle2.setOnClickListener{
-            if(candle2State){
-                lightCandle(candle2, false)
-                candle2State = false
-            }
-            else{
-                lightCandle(candle2, true)
-                candle2State = true
-            }
-        }
-
-        val candle3 = findViewById<ImageView>(R.id.candle3)
-        candle3.setOnClickListener{
-            if(candle3State){
-                lightCandle(candle3, false)
-                candle3State = false
-            }
-            else{
-                lightCandle(candle3, true)
-                candle3State = true
-            }
-        }
-
-        val candle4 = findViewById<ImageView>(R.id.candle4)
-        candle4.setOnClickListener{
-            if(candle4State){
-                lightCandle(candle4, false)
-                candle4State = false
-            }
-            else{
-                lightCandle(candle4, true)
-                candle4State = true
-            }
-        }
-
-        val candle5 = findViewById<ImageView>(R.id.candle5)
-        candle5.setOnClickListener{
-            if(candle5State){
-                lightCandle(candle5, false)
-                candle5State = false
-            }
-            else{
-                lightCandle(candle5, true)
-                candle5State = true
+        // Toggle candle value in db
+        candles.forEachIndexed { index, candle ->
+            candle.setOnClickListener {
+                candlesdb[index].setValue(candlesState[index].not())
             }
         }
     }
