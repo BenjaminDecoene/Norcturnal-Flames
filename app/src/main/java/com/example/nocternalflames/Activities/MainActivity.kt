@@ -1,10 +1,8 @@
 package com.example.nocternalflames.Activities
 
 import android.content.ContentValues.TAG
-import android.media.Image
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.PersistableBundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
@@ -16,6 +14,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+
 
 class MainActivity : AppCompatActivity(){
     // Local candleState
@@ -49,28 +48,55 @@ class MainActivity : AppCompatActivity(){
             findViewById<ImageView>(R.id.candle5)
                 )
 
-        // Listen to candle values in the db
-        candlesdb.forEachIndexed { index, candledb ->
-            candledb.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    // This method is called once with the initial value and again
-                    // whenever data at this location is updated.
-                    candlesState[index] = dataSnapshot.value as Boolean
-                    lightCandle(candles[index], candlesState[index])
+        val lightEvents = database.getReference("lightEvents")
+        lightEvents.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+
+                var count = 0
+                // Count lit candles based on events
+                for (snapshot in dataSnapshot.children) {
+                    val newCount = count + snapshot.getValue().toString().toInt()
+                    if (newCount < 0 || newCount > candles.size)
+                        continue
+
+                    count = newCount
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    // Failed to read value
-                    Log.w(TAG, "Failed to read value.", error.toException())
+                // Extinguish all candles
+                candles.forEach {
+                    lightCandle(it, false)
                 }
-            })
+
+                // Light candles based on count
+                for (i in 0..count - 1){
+                    lightCandle(candles[i], true)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException())
+            }
+        })
+
+        // Light candle button
+        val lightCandleButton = findViewById<Button>(R.id.lightCandleButton)
+        lightCandleButton.setOnClickListener {
+            val itemsRef = database.getReference("lightEvents")
+
+            val newItemRef = itemsRef.push()
+            newItemRef.setValue(1)
         }
 
-        // Toggle candle value in db
-        candles.forEachIndexed { index, candle ->
-            candle.setOnClickListener {
-                candlesdb[index].setValue(candlesState[index].not())
-            }
+        // Extinguish candle button
+        val extinguishCandleButton = findViewById<Button>(R.id.extinguishCandleButton)
+        extinguishCandleButton.setOnClickListener {
+            val itemsRef = database.getReference("lightEvents")
+
+            val newItemRef = itemsRef.push()
+            newItemRef.setValue(-1)
         }
 
         // Start game button
@@ -103,7 +129,6 @@ class MainActivity : AppCompatActivity(){
                     // if the game has not started yet
                     countDownTimer?.cancel()
                     timeLeftInMillis = gameTime
-                    println("asdf")
                     updateTimer()
                 }
             }
@@ -153,5 +178,6 @@ class MainActivity : AppCompatActivity(){
         database.getReference("candle4_state").setValue(false)
         database.getReference("candle5_state").setValue(false)
         database.getReference("start time").setValue(0L)
+        database.getReference("lightEvents").removeValue()
     }
 }
