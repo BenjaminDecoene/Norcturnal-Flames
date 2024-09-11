@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/lightCandleButton"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -9,14 +10,16 @@
         android:id="@+id/candle1"
         android:layout_width="75sp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/candle_off"/>
+        app:srcCompat="@drawable/candle_off" />
 
     <ImageView
         android:id="@+id/candle3"
         android:layout_width="75sp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         app:layout_constraintStart_toEndOf="@+id/candle2"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/candle_off" />
@@ -25,6 +28,7 @@
         android:id="@+id/candle4"
         android:layout_width="75sp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         app:layout_constraintStart_toEndOf="@+id/candle3"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/candle_off" />
@@ -33,6 +37,7 @@
         android:id="@+id/candle5"
         android:layout_width="75sp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         app:layout_constraintStart_toEndOf="@+id/candle4"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/candle_off" />
@@ -41,8 +46,58 @@
         android:id="@+id/candle2"
         android:layout_width="75sp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         app:layout_constraintStart_toEndOf="@+id/candle1"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/candle_off" />
+
+    <TextView
+        android:id="@+id/timerTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="00:00:00"
+        android:textSize="48sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/startButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start"
+        app:layout_constraintBottom_toTopOf="@+id/resetButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/resetButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:text="Reset"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Light candle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/extinguishCandleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Extinguish Candle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
