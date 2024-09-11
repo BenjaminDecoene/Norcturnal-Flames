@@ -14,6 +14,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import android.os.Handler
 
 
 class MainActivity : AppCompatActivity(){
@@ -22,6 +23,7 @@ class MainActivity : AppCompatActivity(){
     private var gameTime: Long = 600900 // 10 minutes
     private var timeLeftInMillis: Long = 601000 // 10 minutes
     private var countDownTimer: CountDownTimer? = null
+    private val handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,15 +31,6 @@ class MainActivity : AppCompatActivity(){
 
         // Firebase realtime database
         val database = Firebase.database("https://nocturnal-lights-61563-default-rtdb.europe-west1.firebasedatabase.app")
-
-        // Init database refs
-        val candlesdb = listOf(
-            database.getReference("candle1_state"),
-            database.getReference("candle2_state"),
-            database.getReference("candle3_state"),
-            database.getReference("candle4_state"),
-            database.getReference("candle5_state")
-            )
 
         // Init candle image views
         val candles = listOf(
@@ -88,6 +81,12 @@ class MainActivity : AppCompatActivity(){
 
             val newItemRef = itemsRef.push()
             newItemRef.setValue(1)
+
+            // Disable the button
+            lightCandleButton.isEnabled = false
+
+            // Re-enable the button after 10 seconds (10000 milliseconds)
+            handler.postDelayed({ lightCandleButton.isEnabled = true }, 10000)
         }
 
         // Extinguish candle button
@@ -97,6 +96,12 @@ class MainActivity : AppCompatActivity(){
 
             val newItemRef = itemsRef.push()
             newItemRef.setValue(-1)
+
+            // Disable the button
+            extinguishCandleButton.isEnabled = false
+
+            // Re-enable the button after 10 seconds (10000 milliseconds)
+            handler.postDelayed({ extinguishCandleButton.isEnabled = true }, 10000)
         }
 
         // Start game button
