@@ -15,15 +15,23 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import android.os.Handler
+import android.view.View
+import android.widget.Toast
+import androidx.core.view.isVisible
+import com.example.nocternalflames.LightEvent
 
 
 class MainActivity : AppCompatActivity(){
     // Local candleState
-    private var candlesState = arrayOf(false,false,false,false,false)
     private var gameTime: Long = 600900 // 10 minutes
     private var timeLeftInMillis: Long = 601000 // 10 minutes
     private var countDownTimer: CountDownTimer? = null
     private val handler = Handler()
+    private var fullCandleCountInMillis: Long = 30000
+    private var fullCanclesTimeLeft: Long = 30000
+    private var countDownTimerFullCancles: CountDownTimer? = null
+    private var candleCount =  0
+    private var minCandles = 5
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,13 +56,31 @@ class MainActivity : AppCompatActivity(){
                 // whenever data at this location is updated.
 
                 var count = 0
+                var lastCount = 0
+                var countdownStartTimer = 0L
                 // Count lit candles based on events
                 for (snapshot in dataSnapshot.children) {
-                    val newCount = count + snapshot.getValue().toString().toInt()
+                    val lightEvent = snapshot.getValue(LightEvent::class.java)
+                    val newCount = count + lightEvent!!.value
                     if (newCount < 0 || newCount > candles.size)
                         continue
 
                     count = newCount
+
+                    // save the timestamp of when the candles go from 4 to 5
+                    if(count == minCandles && lastCount == minCandles - 1){
+                        countdownStartTimer = lightEvent.timestamp
+                    }
+                    lastCount = count
+                }
+                candleCount = count
+
+                // Start countdown if there are 5 or more candles
+                if(candleCount >= 5) {
+                    startFullCandleTimer(countdownStartTimer)
+                    println("Counting down")
+                }else{
+                    stopFullCandleTimer()
                 }
 
                 // Extinguish all candles
@@ -77,10 +103,12 @@ class MainActivity : AppCompatActivity(){
         // Light candle button
         val lightCandleButton = findViewById<Button>(R.id.lightCandleButton)
         lightCandleButton.setOnClickListener {
+            val event = LightEvent(System.currentTimeMillis(), 1)
+
             val itemsRef = database.getReference("lightEvents")
 
             val newItemRef = itemsRef.push()
-            newItemRef.setValue(1)
+            newItemRef.setValue(event)
 
             // Disable the button
             lightCandleButton.isEnabled = false
@@ -92,10 +120,11 @@ class MainActivity : AppCompatActivity(){
         // Extinguish candle button
         val extinguishCandleButton = findViewById<Button>(R.id.extinguishCandleButton)
         extinguishCandleButton.setOnClickListener {
+            val event = LightEvent(System.currentTimeMillis(), -1)
             val itemsRef = database.getReference("lightEvents")
 
             val newItemRef = itemsRef.push()
-            newItemRef.setValue(-1)
+            newItemRef.setValue(event)
 
             // Disable the button
             extinguishCandleButton.isEnabled = false
@@ -153,6 +182,7 @@ class MainActivity : AppCompatActivity(){
     }
 
     private fun startTimer() {
+        val context = this
         countDownTimer = object : CountDownTimer(timeLeftInMillis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 timeLeftInMillis = millisUntilFinished
@@ -161,6 +191,7 @@ class MainActivity : AppCompatActivity(){
 
             override fun onFinish() {
                 // Timer finished
+                Toast.makeText(context, "Seekers Won!", Toast.LENGTH_LONG).show()
             }
         }.start()
     }
@@ -170,6 +201,37 @@ class MainActivity : AppCompatActivity(){
         val seconds = (timeLeftInMillis / 1000).toInt() % 60
         val timeLeftFormatted = String.format("%02d:%02d", minutes, seconds)
         val timerText = findViewById<TextView>(R.id.timerTextView)
+        timerText.text = timeLeftFormatted
+    }
+
+    private fun startFullCandleTimer(startTime: Long) {
+        val context = this
+        countDownTimerFullCancles = object : CountDownTimer(fullCandleCountInMillis - (System.currentTimeMillis() - startTime), 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                fullCanclesTimeLeft = millisUntilFinished
+                val timerText = findViewById<TextView>(R.id.countDown)
+                timerText.isVisible = true
+                updateFullCandleTimer()
+            }
+
+            override fun onFinish() {
+                // Timer finished
+                Toast.makeText(context, "Hiders Won!", Toast.LENGTH_LONG).show()
+            }
+        }.start()
+    }
+
+    private fun stopFullCandleTimer(){
+        countDownTimerFullCancles?.cancel()
+        val timerText = findViewById<TextView>(R.id.countDown)
+        timerText.isVisible = false
+    }
+
+    private fun updateFullCandleTimer(){
+        val minutes = (fullCanclesTimeLeft / 1000).toInt() / 60
+        val seconds = (fullCanclesTimeLeft / 1000).toInt() % 60
+        val timeLeftFormatted = String.format("%02d:%02d", minutes, seconds)
+        val timerText = findViewById<TextView>(R.id.countDown)
         timerText.text = timeLeftFormatted
     }
 
