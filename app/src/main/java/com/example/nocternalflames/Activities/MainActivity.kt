@@ -3,22 +3,24 @@ package com.example.nocternalflames.Activities
 import android.content.ContentValues.TAG
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.Handler
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
+import com.example.nocternalflames.LightEvent
 import com.example.nocternalflames.R
+import com.example.nocternalflames.makePhoneBuzz
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
-import android.os.Handler
-import android.view.View
-import android.widget.Toast
-import androidx.core.view.isVisible
-import com.example.nocternalflames.LightEvent
 
 
 class MainActivity : AppCompatActivity(){
@@ -103,6 +105,9 @@ class MainActivity : AppCompatActivity(){
         // Light candle button
         val lightCandleButton = findViewById<Button>(R.id.lightCandleButton)
         lightCandleButton.setOnClickListener {
+            if(countDownTimer == null)
+                return@setOnClickListener
+
             val event = LightEvent(System.currentTimeMillis(), 1)
 
             val itemsRef = database.getReference("lightEvents")
@@ -120,6 +125,9 @@ class MainActivity : AppCompatActivity(){
         // Extinguish candle button
         val extinguishCandleButton = findViewById<Button>(R.id.extinguishCandleButton)
         extinguishCandleButton.setOnClickListener {
+            if(countDownTimer == null)
+                return@setOnClickListener
+
             val event = LightEvent(System.currentTimeMillis(), -1)
             val itemsRef = database.getReference("lightEvents")
 
@@ -215,8 +223,9 @@ class MainActivity : AppCompatActivity(){
             }
 
             override fun onFinish() {
-                // Timer finished
                 Toast.makeText(context, "Hiders Won!", Toast.LENGTH_LONG).show()
+                countDownTimer?.cancel()
+                makePhoneBuzz(context,1000)
             }
         }.start()
     }
@@ -233,6 +242,9 @@ class MainActivity : AppCompatActivity(){
         val timeLeftFormatted = String.format("%02d:%02d", minutes, seconds)
         val timerText = findViewById<TextView>(R.id.countDown)
         timerText.text = timeLeftFormatted
+
+        // vibrate
+        makePhoneBuzz(this,100)
     }
 
     private fun resetGame(){
