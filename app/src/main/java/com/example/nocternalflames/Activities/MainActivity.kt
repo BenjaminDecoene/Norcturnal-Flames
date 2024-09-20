@@ -1,9 +1,14 @@
 package com.example.nocternalflames.Activities
 
+import android.content.ComponentName
 import android.content.ContentValues.TAG
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
+import android.os.IBinder
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
@@ -13,6 +18,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import com.example.nocternalflames.Foreground
 import com.example.nocternalflames.LightEvent
 import com.example.nocternalflames.R
 import com.example.nocternalflames.makePhoneBuzz
@@ -35,9 +41,32 @@ class MainActivity : AppCompatActivity(){
     private var candleCount =  0
     private var minCandles = 5
 
+    private var mService: Foreground? = null
+    private var mBound: Boolean = false
+
+    // Defines callbacks for service binding, passed to bindService()
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            // We've bound to VibrationService, cast the IBinder and get VibrationService instance
+            val binder = service as Foreground.LocalBinder
+            mService = binder.getService()
+            mBound = true
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            mService = null
+            mBound = false
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity_layout)
+
+        // Setup foreground service
+        val intent = Intent(this, Foreground::class.java)
+        startService(intent)
+        bindService(intent, connection, Context.BIND_AUTO_CREATE)
 
         // Firebase realtime database
         val database = Firebase.database("https://nocturnal-lights-61563-default-rtdb.europe-west1.firebasedatabase.app")
@@ -225,7 +254,7 @@ class MainActivity : AppCompatActivity(){
             override fun onFinish() {
                 Toast.makeText(context, "Hiders Won!", Toast.LENGTH_LONG).show()
                 countDownTimer?.cancel()
-                makePhoneBuzz(context,1000)
+                mService?.makePhoneBuzz(context,1000)
             }
         }.start()
     }
@@ -244,7 +273,7 @@ class MainActivity : AppCompatActivity(){
         timerText.text = timeLeftFormatted
 
         // vibrate
-        makePhoneBuzz(this,100)
+        mService?.makePhoneBuzz(this,100)
     }
 
     private fun resetGame(){
