@@ -26,7 +26,17 @@
             </intent-filter>
         </activity>
 
-        <service
+        <activity
+            android:name=".Activities.HidersWonActivity"
+            android:exported="true">
+        </activity>
+
+        <activity
+            android:name=".Activities.SeekersWonActivity"
+            android:exported="true">
+        </activity>
+
+    <service
             android:name=".Foreground"
             android:exported="false" />
 

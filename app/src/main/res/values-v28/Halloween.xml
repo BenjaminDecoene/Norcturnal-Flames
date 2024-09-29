@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="HalloweenStyle" parent="Widget.AppCompat.Button">
+        <item name="android:backgroundTint">@color/cardview_dark_background</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="android:fontFamily">@font/creepster_regular</item>
+        <item name="android:buttonCornerRadius">16dp</item>
+    </style>
+</resources>

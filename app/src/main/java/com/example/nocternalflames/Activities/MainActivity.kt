@@ -17,6 +17,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isVisible
 import com.example.nocternalflames.Foreground
 import com.example.nocternalflames.LightEvent
@@ -61,6 +62,7 @@ class MainActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         setContentView(R.layout.main_activity_layout)
 
         // Setup foreground service
@@ -228,7 +230,9 @@ class MainActivity : AppCompatActivity(){
 
             override fun onFinish() {
                 // Timer finished
-                Toast.makeText(context, "Seekers Won!", Toast.LENGTH_LONG).show()
+                resetGame()
+                val intent = Intent(context, SeekersWonActivity::class.java)
+                startActivity(intent)
             }
         }.start()
     }
@@ -252,9 +256,11 @@ class MainActivity : AppCompatActivity(){
             }
 
             override fun onFinish() {
-                Toast.makeText(context, "Hiders Won!", Toast.LENGTH_LONG).show()
                 countDownTimer?.cancel()
                 mService?.makePhoneBuzz(context,1000)
+                resetGame()
+                val intent = Intent(context, HidersWonActivity::class.java)
+                startActivity(intent)
             }
         }.start()
     }
