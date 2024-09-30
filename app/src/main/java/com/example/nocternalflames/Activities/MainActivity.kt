@@ -1,5 +1,6 @@
 package com.example.nocternalflames.Activities
 
+import android.animation.ObjectAnimator
 import android.content.ComponentName
 import android.content.ContentValues.TAG
 import android.content.Context
@@ -32,8 +33,8 @@ import com.google.firebase.database.database
 
 class MainActivity : AppCompatActivity(){
     // Local candleState
-    private var gameTime: Long = 600900 // 10 minutes
-    private var timeLeftInMillis: Long = 601000 // 10 minutes
+    private var gameTime: Long = 1200900 // 20 minutes
+    private var timeLeftInMillis: Long = 1201000 // 20 minutes
     private var countDownTimer: CountDownTimer? = null
     private val handler = Handler()
     private var fullCandleCountInMillis: Long = 30000
@@ -41,6 +42,7 @@ class MainActivity : AppCompatActivity(){
     private var countDownTimerFullCancles: CountDownTimer? = null
     private var candleCount =  0
     private var minCandles = 5
+    private lateinit var fadeAnimator : ObjectAnimator
 
     private var mService: Foreground? = null
     private var mBound: Boolean = false
@@ -64,6 +66,15 @@ class MainActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         setContentView(R.layout.main_activity_layout)
+
+        // Setup the fadeAnimator
+        val imageView = findViewById<ImageView>(R.id.full_glow)
+
+        // Create an ObjectAnimator for the alpha property (fade in and out)
+        val fadeAnimator = ObjectAnimator.ofFloat(imageView, "alpha", 0f, 1f)
+        fadeAnimator.duration = 1000 // 2 seconds for a fade in or fade out
+        fadeAnimator.repeatCount = ObjectAnimator.INFINITE
+        fadeAnimator.repeatMode = ObjectAnimator.REVERSE
 
         // Setup foreground service
         val intent = Intent(this, Foreground::class.java)
@@ -108,12 +119,24 @@ class MainActivity : AppCompatActivity(){
                 }
                 candleCount = count
 
+                updateCandleGlow(candleCount)
+
                 // Start countdown if there are 5 or more candles
                 if(candleCount >= 5) {
                     startFullCandleTimer(countdownStartTimer)
+                    // Start the animation
+                    fadeAnimator.start()
                     println("Counting down")
                 }else{
                     stopFullCandleTimer()
+                    // Cancel the animation
+                    fadeAnimator.cancel()
+
+                    // Animate the alpha to 0 (fully transparent) after canceling
+                    val fadeOutAnimator = ObjectAnimator.ofFloat(imageView, "alpha", imageView.alpha, 0f)
+                    fadeOutAnimator.duration = 500 // Duration of the fade out (adjust as needed)
+
+                    fadeOutAnimator.start()
                 }
 
                 // Extinguish all candles
@@ -293,5 +316,43 @@ class MainActivity : AppCompatActivity(){
         database.getReference("candle5_state").setValue(false)
         database.getReference("start time").setValue(0L)
         database.getReference("lightEvents").removeValue()
+    }
+
+    private fun updateCandleGlow(candles: Int){
+        val imageFadeOut = findViewById<ImageView>(R.id.candle_glow_past)
+
+        // Setup the fadeAnimator
+        val imageFadeIn = findViewById<ImageView>(R.id.candle_glow)
+
+        imageFadeOut.setImageDrawable(imageFadeIn.drawable)
+        imageFadeOut.alpha = 1f
+
+        // Create an ObjectAnimator for the alpha property (fade in and out)
+        val fadeoutAnimator = ObjectAnimator.ofFloat(imageFadeOut, "alpha", 1f, 0f)
+        fadeoutAnimator.duration = 1000 // 1 seconds for a fade in or fade out
+
+        fadeoutAnimator.start()
+
+        imageFadeIn.alpha = 0f
+
+        if(candles == 0){
+            imageFadeIn.setImageResource(R.drawable.empty)
+        }else if(candles == 1){
+            imageFadeIn.setImageResource(R.drawable.candle_1)
+        }else if(candles == 2){
+            imageFadeIn.setImageResource(R.drawable.candles_2)
+        }else if(candles == 3){
+            imageFadeIn.setImageResource(R.drawable.candles_3)
+        }else if(candles == 4){
+            imageFadeIn.setImageResource(R.drawable.candles_4)
+        }else if(candles == 5){
+            imageFadeIn.setImageResource(R.drawable.empty)
+        }
+
+        // Create an ObjectAnimator for the alpha property (fade in and out)
+        val fadeAnimator = ObjectAnimator.ofFloat(imageFadeIn, "alpha", 0f, 1f)
+        fadeAnimator.duration = 1000 // 1 seconds for a fade in or fade out
+
+        fadeAnimator.start()
     }
 }

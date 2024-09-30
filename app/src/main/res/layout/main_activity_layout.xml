@@ -5,19 +5,46 @@
     android:id="@+id/constraint"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
-    android:backgroundTint="#000000">
+    android:background="#1B1616"
+    android:backgroundTint="#1B1616">
 
     <ImageView
         android:id="@+id/imageView2"
-        android:layout_width="415dp"
-        android:layout_height="561dp"
-        android:background="#000000"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#1B1616"
         android:scaleType="centerInside"
-        android:src="@drawable/pentagram2"
+        android:src="@drawable/pentagram3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/full_glow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0"
+        android:visibility="visible"
+        app:layout_constraintTop_toTopOf="@+id/imageView2"
+        app:srcCompat="@drawable/glow_effect" />
+
+    <ImageView
+        android:id="@+id/candle_glow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#1B1616"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/candle_1"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <ImageView
+        android:id="@+id/candle_glow_past"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#1B1616"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/candle_1"
+        tools:layout_editor_absoluteX="0dp" />
 
     <ImageView
         android:id="@+id/candle1"
@@ -25,7 +52,8 @@
         android:layout_height="160sp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="180dp"
-        android:alpha="0.7"
+        android:alpha="1"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="@+id/imageView2"
         app:layout_constraintTop_toTopOf="@+id/imageView2"
         app:srcCompat="@drawable/candle_off" />
@@ -36,7 +64,8 @@
         android:layout_height="160sp"
         android:layout_marginStart="272dp"
         android:layout_marginTop="8dp"
-        android:alpha="0.7"
+        android:alpha="1"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/candle_off" />
@@ -47,7 +76,8 @@
         android:layout_height="160sp"
         android:layout_marginStart="68dp"
         android:layout_marginTop="16dp"
-        android:alpha="0.7"
+        android:alpha="1"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/candle_off" />
@@ -58,7 +88,8 @@
         android:layout_height="160sp"
         android:layout_marginStart="168dp"
         android:layout_marginTop="332dp"
-        android:alpha="0.7"
+        android:alpha="1"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/candle_off" />
@@ -69,7 +100,8 @@
         android:layout_height="160sp"
         android:layout_marginStart="336dp"
         android:layout_marginTop="204dp"
-        android:alpha="0.7"
+        android:alpha="1"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/candle_off" />
@@ -132,7 +164,7 @@
         android:id="@+id/extinguishCandleButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="#5F081E"
+        android:backgroundTint="@color/button_colors"
         android:fontFamily="@font/creepster_regular"
         android:text="Extinguish Candle"
         android:textColor="@color/white"
@@ -140,7 +172,8 @@
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lightCandleButton" />
+        app:layout_constraintTop_toBottomOf="@+id/lightCandleButton"
+        app:rippleColor="#453C3C"/>
 
     <TextView
         android:id="@+id/countDown"
@@ -154,5 +187,6 @@
         app:layout_constraintBottom_toTopOf="@+id/lightCandleButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
