@@ -6,29 +6,31 @@ import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.SoundPool
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.IBinder
-import android.os.VibrationEffect
-import android.os.Vibrator
+import android.os.Looper
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isVisible
 import com.example.nocternalflames.Foreground
 import com.example.nocternalflames.LightEvent
 import com.example.nocternalflames.R
-import com.example.nocternalflames.makePhoneBuzz
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import java.util.Random
+import kotlin.math.min
 
 
 class MainActivity : AppCompatActivity(){
@@ -36,13 +38,21 @@ class MainActivity : AppCompatActivity(){
     private var gameTime: Long = 1200900 // 20 minutes
     private var timeLeftInMillis: Long = 1201000 // 20 minutes
     private var countDownTimer: CountDownTimer? = null
-    private val handler = Handler()
+    private var handler = Handler()
     private var fullCandleCountInMillis: Long = 30000
     private var fullCanclesTimeLeft: Long = 30000
     private var countDownTimerFullCancles: CountDownTimer? = null
     private var candleCount =  0
+    private var maxCandles = 7
     private var minCandles = 5
     private lateinit var fadeAnimator : ObjectAnimator
+
+    // For sound
+    private lateinit var soundPool: SoundPool
+    private var soundIds: MutableList<Int> = mutableListOf()
+    private val soundHandler: Handler? = null
+    private var random: Random? = null
+
 
     private var mService: Foreground? = null
     private var mBound: Boolean = false
@@ -66,6 +76,45 @@ class MainActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         setContentView(R.layout.main_activity_layout)
+
+        // Setup soundPool
+
+        // Initialize SoundPool with proper audio attributes
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_GAME)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+
+        soundPool = SoundPool.Builder()
+            .setMaxStreams(1)
+            .setAudioAttributes(audioAttributes)
+            .build()
+
+
+        // Load the sound file
+        soundIds.add(soundPool.load(this, R.raw.footsteps_stop, 1))
+        soundIds.add(soundPool.load(this, R.raw.organ, 1))
+        soundIds.add(soundPool.load(this, R.raw.ghost, 1))
+        soundIds.add(soundPool.load(this, R.raw.tension, 1))
+        soundIds.add(soundPool.load(this, R.raw.behind_you, 1))
+        soundIds.add(soundPool.load(this, R.raw.whisper_trail, 1))
+        soundIds.add(soundPool.load(this, R.raw.whisper5, 1))
+        soundIds.add(soundPool.load(this, R.raw.banging_noise, 1))
+        soundIds.add(soundPool.load(this, R.raw.horror, 1))
+        soundIds.add(soundPool.load(this, R.raw.horror_realisation, 1))
+        soundIds.add(soundPool.load(this, R.raw.horror_sfx_3, 1))
+        soundIds.add(soundPool.load(this, R.raw.paranormal, 1))
+        soundIds.add(soundPool.load(this, R.raw.female_horror, 1))
+        soundIds.add(soundPool.load(this, R.raw.stairs, 1))
+
+
+        // Initialize Handler and Random
+        handler = Handler(Looper.getMainLooper())
+        random = Random()
+
+        scheduleRandomSound()
+
+        //------------------------------------------------------------------------
 
         // Setup the fadeAnimator
         val imageView = findViewById<ImageView>(R.id.full_glow)
@@ -106,7 +155,7 @@ class MainActivity : AppCompatActivity(){
                 for (snapshot in dataSnapshot.children) {
                     val lightEvent = snapshot.getValue(LightEvent::class.java)
                     val newCount = count + lightEvent!!.value
-                    if (newCount < 0 || newCount > candles.size)
+                    if (newCount < 0 || newCount > maxCandles)
                         continue
 
                     count = newCount
@@ -122,12 +171,13 @@ class MainActivity : AppCompatActivity(){
                 updateCandleGlow(candleCount)
 
                 // Start countdown if there are 5 or more candles
-                if(candleCount >= 5) {
+                if(candleCount >= minCandles) {
                     startFullCandleTimer(countdownStartTimer)
                     // Start the animation
                     fadeAnimator.start()
                     println("Counting down")
                 }else{
+                    println(candleCount)
                     stopFullCandleTimer()
                     // Cancel the animation
                     fadeAnimator.cancel()
@@ -145,7 +195,7 @@ class MainActivity : AppCompatActivity(){
                 }
 
                 // Light candles based on count
-                for (i in 0..count - 1){
+                for (i in 0..min(count - 1, minCandles - 1)){
                     lightCandle(candles[i], true)
                 }
             }
@@ -236,6 +286,16 @@ class MainActivity : AppCompatActivity(){
         })
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        if (soundPool != null) {
+            soundPool.release()
+        }
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null)
+        }
+    }
+
     private fun lightCandle(candle:ImageView, light: Boolean){
         if (light)
             candle.setImageResource(R.drawable.candle_on)
@@ -270,6 +330,10 @@ class MainActivity : AppCompatActivity(){
 
     private fun startFullCandleTimer(startTime: Long) {
         val context = this
+
+        if (countDownTimerFullCancles != null)
+            return
+
         countDownTimerFullCancles = object : CountDownTimer(fullCandleCountInMillis - (System.currentTimeMillis() - startTime), 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 fullCanclesTimeLeft = millisUntilFinished
@@ -289,7 +353,10 @@ class MainActivity : AppCompatActivity(){
     }
 
     private fun stopFullCandleTimer(){
+        println("stopFullCandleTimer")
+        println(countDownTimerFullCancles)
         countDownTimerFullCancles?.cancel()
+        countDownTimerFullCancles = null
         val timerText = findViewById<TextView>(R.id.countDown)
         timerText.isVisible = false
     }
@@ -354,5 +421,31 @@ class MainActivity : AppCompatActivity(){
         fadeAnimator.duration = 1000 // 1 seconds for a fade in or fade out
 
         fadeAnimator.start()
+    }
+
+    // Schedule sound to play at random intervals around 10 minutes
+    private fun scheduleRandomSound() {
+        // Generate a random interval between 8 to 12 minutes (in milliseconds)
+        val minInterval = 1 * 60 * 1000 // 8 minutes in milliseconds
+        val maxInterval = 2 * 60 * 1000 // 12 minutes in milliseconds
+        val randomDelay = random!!.nextInt(maxInterval - minInterval) + minInterval
+        val randomId = soundIds[random!!.nextInt(soundIds.size)]
+
+        // Post a delayed task to play the sound
+        handler.postDelayed({ // Play the sound
+            if (countDownTimer != null) {
+                //------------------------------------------------------------------------
+                // Volume op max zetten
+
+                // Get the AudioManager system service
+                val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, AudioManager.FLAG_SHOW_UI)
+
+                mService?.playSoundEffect(soundPool, randomId)
+            }
+            // Reschedule the next random sound
+            scheduleRandomSound()
+        }, randomDelay.toLong())
     }
 }

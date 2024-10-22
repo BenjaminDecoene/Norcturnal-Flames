@@ -34,7 +34,7 @@
         android:layout_height="wrap_content"
         android:backgroundTint="#1B1616"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/candle_1"
+        app:srcCompat="@drawable/empty"
         tools:layout_editor_absoluteX="0dp" />
 
     <ImageView
@@ -43,7 +43,7 @@
         android:layout_height="wrap_content"
         android:backgroundTint="#1B1616"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/candle_1"
+        app:srcCompat="@drawable/empty"
         tools:layout_editor_absoluteX="0dp" />
 
     <ImageView

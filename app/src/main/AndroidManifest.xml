@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+
 
     <application
         android:name=".App"
@@ -36,9 +38,10 @@
             android:exported="true">
         </activity>
 
-    <service
+        <service
             android:name=".Foreground"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="shortService"/>
 
 
     </application>

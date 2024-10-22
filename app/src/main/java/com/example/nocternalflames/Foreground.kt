@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.media.SoundPool
 import android.os.Binder
 import android.os.Build
 import android.os.CountDownTimer
@@ -88,4 +89,9 @@ class Foreground: Service() {
             }
         }
     }
+
+    fun playSoundEffect(soundPool: SoundPool, id: Int){
+        soundPool.play(id, 1f, 1f, 1, 0, 1f);
+    }
+
 }
