@@ -426,8 +426,8 @@ class MainActivity : AppCompatActivity(){
     // Schedule sound to play at random intervals around 10 minutes
     private fun scheduleRandomSound() {
         // Generate a random interval between 8 to 12 minutes (in milliseconds)
-        val minInterval = 1 * 60 * 1000 // 8 minutes in milliseconds
-        val maxInterval = 2 * 60 * 1000 // 12 minutes in milliseconds
+        val minInterval = 8 * 60 * 1000 // 8 minutes in milliseconds
+        val maxInterval = 15 * 60 * 1000 // 12 minutes in milliseconds
         val randomDelay = random!!.nextInt(maxInterval - minInterval) + minInterval
         val randomId = soundIds[random!!.nextInt(soundIds.size)]
 
